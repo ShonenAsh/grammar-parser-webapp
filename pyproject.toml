@@ -1,0 +1,24 @@
+[project]
+name = "grammar-parser"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "conllu>=6.0.0",
+    "en-core-web-sm",
+    "nltk>=3.9.2",
+    "numpy>=2.4.1",
+    "spacy",
+    "torch",
+]
+
+[tool.uv.sources]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0.tar.gz" }
+torch = { index = "pytorch-cu130" }
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url =  "https://download.pytorch.org/whl/cu130"
+explicit = true
+
