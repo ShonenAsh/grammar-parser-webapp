@@ -1,5 +1,6 @@
 import logging
 import sys
+import json
 
 import torch
 import torch.nn as nn
@@ -16,8 +17,8 @@ logging.basicConfig(
 
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
-EPOCHS = 50
-
+EPOCHS = 10
+ONNX_EXPORT_PATH = "cnn_pos_tagger.onnx"
 
 # Dataset class for English Dependency Treebank data
 class POSDataset(Dataset):
@@ -76,7 +77,6 @@ class CNNPOSTagger(nn.Module):
         logits = self.fc(convolved)
         return logits
 
-
 def cal_accuracy(preds, labels, ignore_index=-1):
     predicted_idx = preds.argmax(dim=-1)
     mask = (labels != ignore_index)
@@ -84,20 +84,30 @@ def cal_accuracy(preds, labels, ignore_index=-1):
     correct = (predicted_idx == labels) & mask
     return correct.sum().item() / mask.sum().item()
 
+def export_vocab_files(word_id_map, tag_id_map, vocab_path="vocab.json", tag_path="tag_to_id.json"):
+    with open(vocab_path, "w", encoding="utf-8") as f:
+        json.dump(dict(word_id_map), f, ensure_ascii=False, indent=2)
+
+    with open(tag_path, "w", encoding="utf-8") as f:
+        json.dump(dict(tag_id_map), f, ensure_ascii=False, indent=2)
+
+    logging.info(f"Exported vocab files to {vocab_path}, {tag_path}")
 
 def train(train_path, test_path):
     train_set = parse_conllu(train_path)
     test_set = parse_conllu(test_path)
-
+    # vocab map is built from the train set
     tr_token_map, tr_tag_map = build_vocab_maps(train_set)
-    ts_token_map, ts_tag_map = build_vocab_maps(test_set)
+    
+    export_vocab_files(tr_token_map, tr_tag_map)
 
     VOCAB_SIZE = len(tr_token_map)
     NUM_TAGS = len(tr_tag_map)
 
     model = CNNPOSTagger(VOCAB_SIZE, NUM_TAGS)
+    # Test data needs id mappings defined by train set, <UNK> id for words not in train set
     train_dataset = POSDataset(train_set, tr_token_map, tr_tag_map)
-    test_dataset = POSDataset(test_set, ts_token_map, ts_tag_map)
+    test_dataset = POSDataset(test_set, tr_token_map, tr_tag_map)
     
     dataloader = DataLoader(train_dataset, BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
     test_dataloader = DataLoader(test_dataset, BATCH_SIZE, shuffle=True, collate_fn=collate_fn)
@@ -132,14 +142,47 @@ def train(train_path, test_path):
         avg_val_acc = val_acc / len(test_dataloader)
 
         print(f"Epoch {epoch+1} | Loss: {avg_train_loss:.4f} | Val Acc: {avg_val_acc:.2%}") 
-            
+    
+    return model
+
+def export_trained_model(model, onnx_export_path=ONNX_EXPORT_PATH):
+    model.eval() # ensure the model is in eval mode
+    device = torch.device('cpu') # ensure model is on CPU for stable export
+    model.to(device)
+
+    # onnx traces the math operations applied to the input which are then exported
+    dummy_input = torch.randint(0 , 100, (1, 5), dtype=torch.long).to(device)
+    
+    # define dynamic axes for variable sentence length
+    dynamic_axes = {
+        "input" : {0 : "batch_size", 1: "sequence_length"},
+        "output": {0 : "batch_size", 1: "sequence_length"}
+    }
+
+    torch.onnx.export(
+        model,
+        (dummy_input,),
+        onnx_export_path,
+        export_params=True,
+        opset_version=15,
+        do_constant_folding=True,
+        input_names=['input'],
+        output_names=['output'],
+        dynamic_axes=dynamic_axes
+    )
+    logging.info(f"Model saved to {onnx_export_path}")
 
 def main(argv: list):
     if len(argv) < 3:
-        print("Usage: cnn.py <TRAIN_CONLLU_PATH> <TEST_CONLLU_PATH>")
+        print("Usage: cnn.py <TRAIN_CONLLU_PATH> <TEST_CONLLU_PATH> <OPTIONAL: ONNX_EXPORT_PATH>")
         sys.exit(1)
+    
+    if len(argv) == 4:
+        ONNX_EXPORT_PATH = argv[3]
 
-    train(argv[1], argv[2])
+    model = train(argv[1], argv[2])
+
+    export_trained_model(model)
     
 
 if __name__ == "__main__":

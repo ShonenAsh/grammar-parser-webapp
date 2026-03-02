@@ -9,6 +9,7 @@ dependencies = [
     "en-core-web-sm",
     "nltk>=3.9.2",
     "numpy>=2.4.1",
+    "onnxscript>=0.6.2",
     "spacy",
     "torch",
 ]
