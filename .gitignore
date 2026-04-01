@@ -8,3 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Node stuff
+node_modules/
+
+# CMake stuff
+*CMake*/**
+
+*CMake*.*
+*Make*.*
+*.cache
