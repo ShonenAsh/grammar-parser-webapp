@@ -3,6 +3,7 @@ import { Parser } from "./parser/parser.js";
 import { applyAttributeRules } from "./parser/attributeRuler.js";
 import { Lemmatizer } from "./lemmatizer/lemmatizer.js";
 import { TokenTable, biber } from "./features/biber.js";
+import { dimensionProfile } from "./features/dimensions.js";
 
 // Sentences outside this range are not parsed (and so not counted in the
 // features); the parser's input is capped at 256 subwords.
@@ -57,6 +58,7 @@ export async function analyzeSentence(words) {
 // Returns {
 //   sentences: [analyzeSentence() results],
 //   features: { f_01_past_tense: { count, per1000 }, ... },
+//   dimensions: Biber dimension profile, see features/dimensions.js (null if no words),
 //   skipped: number of sentences not analyzed (too short or too long),
 // }
 // The text is treated as one document. onProgress(done, total), if given, is
@@ -71,16 +73,20 @@ export async function analyze(text, onProgress) {
     if (r) sentences.push(r);
     else skipped++;
   }
-  return { sentences, features: extractFeatures(sentences), skipped };
+  return { sentences, ...extractFeatures(sentences), skipped };
 }
 
-// analyzeSentence() results -> { f_01_past_tense: { count, per1000 }, ... }
+// analyzeSentence() results -> {
+//   features: { f_01_past_tense: { count, per1000 }, ... },
+//   dimensions: dimensionProfile() result or null,
+// }
 export function extractFeatures(sentences) {
-  if (sentences.length === 0) return {};
+  if (sentences.length === 0) return { features: {}, dimensions: null };
   const table = TokenTable.buildTable([{ sentences }]);
   const counts = biber(table, { normalize: false });
   const rates = biber(table);
-  return Object.fromEntries(
+  const features = Object.fromEntries(
     Object.keys(counts).map((name) => [name, { count: counts[name][0], per1000: rates[name][0] }]),
   );
+  return { features, dimensions: dimensionProfile(sentences, features) };
 }

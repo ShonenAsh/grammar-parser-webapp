@@ -1,9 +1,6 @@
 // The pipeline runs in a Web Worker; see analysisClient.js.
 import { MAX_POOL_SIZE, analyze, poolSize, ready, setPoolSize } from "./analysisClient.js";
-
-// Approximate memory the page uses with n workers, over the browser's own
-// baseline. Measured in Chrome for 1, 2 and 4 workers; 3 is interpolated.
-const POOL_MEMORY_MB = { 1: 220, 2: 320, 3: 430, 4: 530 };
+import { renderProfile } from "./radar.js";
 
 // Rates rather than counts: shown as-is, without a count column.
 const RATE_FEATURES = new Set(["f_43_type_token", "f_44_mean_word_length"]);
@@ -76,6 +73,7 @@ const btn     = document.getElementById("parseBtn");
 const status  = document.getElementById("status");
 const workers = document.getElementById("workers");
 const results = document.getElementById("results");
+const profile = document.getElementById("profile");
 
 async function run() {
   const text = input.value.trim();
@@ -83,6 +81,8 @@ async function run() {
   setBusy(true);
   status.textContent = "analyzing…";
   results.innerHTML = "";
+  // The previous profile stays visible, dimmed, until the new one is ready.
+  profile.style.opacity = "0.5";
 
   try {
     const t0 = performance.now();
@@ -91,6 +91,7 @@ async function run() {
     });
     const ms = (performance.now() - t0).toFixed(0);
 
+    renderProfile(profile, data.dimensions);
     if (!data.sentences.length) {
       results.innerHTML = `<p class="error">No analyzable sentences found.</p>`;
       status.textContent = "";
@@ -107,7 +108,9 @@ async function run() {
   } catch (e) {
     results.innerHTML = `<p class="error">${esc(String(e))}</p>`;
     status.textContent = "error";
+    renderProfile(profile, null);
   } finally {
+    profile.style.opacity = "";
     setBusy(false);
   }
 }
@@ -133,12 +136,13 @@ function waitForModel(loaded) {
 }
 
 for (let n = 1; n <= MAX_POOL_SIZE; n++) {
-  const option = new Option(`${n} (~${POOL_MEMORY_MB[n]} MB)`, String(n));
+  const option = new Option(String(n), String(n));
   workers.add(option);
 }
 workers.value = String(poolSize());
 workers.addEventListener("change", () => waitForModel(setPoolSize(Number(workers.value))));
 
+renderProfile(profile, null);
 waitForModel(ready());
 
 btn.addEventListener("click", run);

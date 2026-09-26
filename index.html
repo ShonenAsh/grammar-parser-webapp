@@ -11,6 +11,7 @@
     --muted:  #6e7781;
     --border: #d0d7de;
     --faint:  #f6f8fa;
+    --accent: #2a78d6;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
@@ -25,7 +26,20 @@
     padding: 2rem 1rem;
   }
 
-  .container { max-width: 860px; margin: 0 auto; }
+  .container { max-width: 1150px; margin: 0 auto; }
+
+  /* Input on the left, dimension profile on the right; stacked on narrow screens. */
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+  .input-col { display: flex; flex-direction: column; }
+  .input-col textarea { flex: 1; }
+  @media (max-width: 900px) {
+    .workspace { grid-template-columns: minmax(0, 1fr); }
+  }
 
   header { margin-bottom: 1.5rem; }
   h1 { font-size: 1.25rem; font-weight: 600; }
@@ -122,6 +136,12 @@
   details[open] summary { border-bottom: 1px solid var(--border); }
   details table { margin: 0.25rem 0; }
 
+  .profile { position: relative; }
+  .profile-heading h2 { margin: 0; }
+  .profile .note { margin-top: 0.25rem; }
+  .profile details { margin-top: 0.6rem; }
+  .radar { position: relative; margin-top: 0.5rem; }
+
   .error {
     padding: 0.6rem 0.75rem;
     border: 1px solid var(--border);
@@ -139,13 +159,18 @@
     <p>Fine-tuned Google's Electra (SLM) as encoder + biaffine parser & tagger running on Onnx runtime.</p>
   </header>
 
-  <textarea id="input" placeholder="Paste a text here and click Analyze…
+  <div class="workspace">
+    <div class="input-col">
+      <textarea id="input" placeholder="Paste a text here and click Analyze…
 
 The scientists who discovered the vaccine won the Nobel Prize. She had already published her findings in three peer-reviewed journals."></textarea>
-  <div class="toolbar">
-    <button id="parseBtn">Analyze</button>
-    <label>Workers<select id="workers" title="Parallel workers. Each holds its own copy of the model, so more workers are faster but use more memory."></select></label>
-    <span id="status"></span>
+      <div class="toolbar">
+        <button id="parseBtn">Analyze</button>
+        <label>Workers<select id="workers" title="Parallel workers. Each holds its own copy of the model, so more workers are faster but use more memory."></select></label>
+        <span id="status"></span>
+      </div>
+    </div>
+    <aside id="profile" class="profile" aria-live="polite"></aside>
   </div>
 
   <div id="results"></div>
