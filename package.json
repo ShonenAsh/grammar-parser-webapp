@@ -1,5 +1,21 @@
 {
+  "name": "grammar-parser",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "bun scripts/copy-ort-wasm.js"
+  },
   "dependencies": {
-    "serve": "^14.2.5"
+    "@huggingface/transformers": "4.3.0",
+    "onnxruntime-web": "1.31.0-dev.20260914-8d85527a0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
   }
 }

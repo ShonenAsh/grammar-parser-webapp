@@ -5,13 +5,20 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "convokit",
     "conllu>=6.0.0",
     "en-core-web-sm",
     "nltk>=3.9.2",
     "numpy>=2.4.1",
+    "onnxruntime>=1.29.0",
     "onnxscript>=0.6.2",
     "spacy",
+    "en_core_web_trf @ https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.8.0/en_core_web_trf-3.8.0-py3-none-any.whl",
     "torch",
+    "cupy-cuda13x",
+    "tqdm>=4.67.1",
+    "dotenv>=0.9.9",
+    "onnxconverter-common>=1.16.0",
 ]
 
 [tool.uv.sources]

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biber features</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --text:   #1f2328;
+    --muted:  #6e7781;
+    --border: #d0d7de;
+    --faint:  #f6f8fa;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #fff;
+    color: var(--text);
+    font-family: var(--font-ui);
+    line-height: 1.5;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  header { margin-bottom: 1.5rem; }
+  h1 { font-size: 1.25rem; font-weight: 600; }
+  header p, .note { color: var(--muted); font-size: 0.85rem; }
+
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 2rem 0 0.6rem;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+  }
+  textarea:focus { outline: none; border-color: var(--muted); }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.6rem;
+  }
+
+  button {
+    padding: 0.4rem 1rem;
+    background: var(--faint);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--muted); }
+  button:disabled { color: var(--muted); cursor: not-allowed; }
+
+  label { color: var(--muted); font-size: 0.8rem; }
+  select {
+    margin-left: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.8rem;
+  }
+  select:hover { border-color: var(--muted); }
+  select:disabled { color: var(--muted); }
+
+  #status { color: var(--muted); font-size: 0.8rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--muted);
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--faint);
+  }
+  tr:hover td { background: var(--faint); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .code, .parse td { font-family: var(--font-mono); font-size: 0.8rem; }
+  .code { color: var(--muted); width: 3.5rem; }
+  .zero td { color: var(--muted); }
+
+  details {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  details table { margin: 0.25rem 0; }
+
+  .error {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Biber features</h1>
+    <p>Biber Multidimensional Linguistic analysis, fully in your browser.</p>
+    <p>Fine-tuned Google's Electra (SLM) as encoder + biaffine parser & tagger running on Onnx runtime.</p>
+  </header>
+
+  <textarea id="input" placeholder="Paste a text here and click Analyze…
+
+The scientists who discovered the vaccine won the Nobel Prize. She had already published her findings in three peer-reviewed journals."></textarea>
+  <div class="toolbar">
+    <button id="parseBtn">Analyze</button>
+    <label>Workers<select id="workers" title="Parallel workers. Each holds its own copy of the model, so more workers are faster but use more memory."></select></label>
+    <span id="status"></span>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
