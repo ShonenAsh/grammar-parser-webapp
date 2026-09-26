@@ -2,20 +2,19 @@
 // each with its own copy of the model on its own CPU core. Exposes the same
 // ready() and analyze() as src/pipeline.js. analyze() splits the text into
 // sentences, hands each sentence to whichever worker is free, and computes the
-// features once all sentences are back, so the page stays responsive and long
-// texts are parsed in parallel.
+// features and dimension scores once all sentences are back, so the page stays
+// responsive and long texts are parsed in parallel.
 
 // Each worker holds its own model, so memory grows with the pool size and
 // parsing speeds up nearly linearly with it.
 export const MAX_POOL_SIZE = 4;
 const STORAGE_KEY = "biber.poolSize";
 
-// The user's last choice, else as many workers as cores allow (one core is
-// left for the page), up to MAX_POOL_SIZE.
+// The user's last choice, else a single worker.
 function initialPoolSize() {
   const saved = Number(localStorage.getItem(STORAGE_KEY));
   if (saved >= 1 && saved <= MAX_POOL_SIZE) return Math.floor(saved);
-  return Math.max(1, Math.min(MAX_POOL_SIZE, (navigator.hardwareConcurrency || 2) - 1));
+  return 1;
 }
 
 // Where public/ files are served from, as an absolute URL. Workers have no
@@ -93,7 +92,7 @@ export function ready() {
 
 setPoolSize(initialPoolSize()).catch(() => {});
 
-// Same result as pipeline.js's analyze(): { sentences, features, skipped }.
+// Same result as pipeline.js's analyze(): { sentences, features, dimensions, skipped }.
 // onProgress(done, total) is called as sentences come back.
 export async function analyze(text, onProgress) {
   await ready();
@@ -114,6 +113,6 @@ export async function analyze(text, onProgress) {
   }));
 
   const sentences = results.filter((r) => r !== null);
-  const features = await first.call("features", { sentences });
-  return { sentences, features, skipped: results.length - sentences.length };
+  const { features, dimensions } = await first.call("features", { sentences });
+  return { sentences, features, dimensions, skipped: results.length - sentences.length };
 }

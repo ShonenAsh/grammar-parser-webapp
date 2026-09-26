@@ -78,8 +78,8 @@ uv run python util/export_attribute_rules.py        # -> src/parser/attributeRul
 
 ## Performance
 
-Sentences are parsed in parallel; the Workers dropdown picks 1-4 workers (default
-`min(4, cores - 1)`, remembered in the browser). Each worker holds its own model copy.
+Sentences are parsed in parallel; the Workers dropdown picks 1-4 workers (default 1,
+remembered in the browser). Each worker holds its own model copy.
 On a 127-sentence text (3,231 words):
 
 | Workers | Time | Memory |
