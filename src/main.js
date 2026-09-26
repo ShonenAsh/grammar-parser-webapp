@@ -1,6 +1,4 @@
 // The pipeline runs in a Web Worker; see analysisClient.js.
-// Fraunces with its optical-size axis, bundled and served by Vite.
-import "@fontsource-variable/fraunces/opsz.css";
 import { MAX_POOL_SIZE, analyze, poolSize, ready, setPoolSize } from "./analysisClient.js";
 import { renderProfile } from "./radar.js";
 

@@ -21,10 +21,6 @@ const NEAR_AVERAGE = 0.1;
 /** @type {Chart | null} */
 let chart = null;
 
-// The canvas draws with whatever font is loaded at the time, so redraw once
-// the web font has arrived.
-document.fonts.ready.then(() => chart?.update("none"));
-
 /** @param {number} score @param {number} k */
 function toScale(score, k) {
   return 0.5 + 0.5 * Math.max(-1, Math.min(1, score / RANGE[k]));
