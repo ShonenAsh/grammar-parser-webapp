@@ -48,7 +48,7 @@ function theme() {
   const css = getComputedStyle(document.documentElement);
   const v = (name) => css.getPropertyValue(name).trim();
   return {
-    text: v("--text"), muted: v("--muted"), border: v("--border"),
+    bg: v("--bg"), text: v("--text"), muted: v("--muted"), border: v("--border"),
     accent: v("--accent"), font: v("--font-ui"),
   };
 }
@@ -78,7 +78,7 @@ function drawChart(canvas, profile, faint) {
         borderColor: accent(alpha),
         borderWidth: 2,
         pointBackgroundColor: accent(alpha),
-        pointBorderColor: "#fff",
+        pointBorderColor: t.bg,
         pointBorderWidth: 2,
         pointRadius: 4.5,
         pointHoverRadius: 6,
@@ -101,7 +101,7 @@ function drawChart(canvas, profile, faint) {
             callback: (value) => (value === 0.5 ? "average" : ""),
             color: t.muted,
             // Clears the spoke line behind the label.
-            backdropColor: "#fff",
+            backdropColor: t.bg,
             backdropPadding: 2,
             font: { family: t.font, size: 10 },
           },
@@ -116,7 +116,7 @@ function drawChart(canvas, profile, faint) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "#fff",
+          backgroundColor: t.bg,
           borderColor: t.border,
           borderWidth: 1,
           titleColor: t.text,
