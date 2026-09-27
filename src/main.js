@@ -74,6 +74,15 @@ const status  = document.getElementById("status");
 const workers = document.getElementById("workers");
 const results = document.getElementById("results");
 const profile = document.getElementById("profile");
+const themeToggle = document.getElementById("theme-toggle");
+
+// The profile on screen, redrawn when the theme changes: the chart's colors
+// are read from the CSS variables when it is drawn.
+let shownProfile = null;
+function showProfile(p) {
+  shownProfile = p;
+  renderProfile(profile, p);
+}
 
 async function run() {
   const text = input.value.trim();
@@ -91,7 +100,7 @@ async function run() {
     });
     const ms = (performance.now() - t0).toFixed(0);
 
-    renderProfile(profile, data.dimensions);
+    showProfile(data.dimensions);
     if (!data.sentences.length) {
       results.innerHTML = `<p class="error">No analyzable sentences found.</p>`;
       status.textContent = "";
@@ -99,8 +108,8 @@ async function run() {
     }
     const n = data.sentences.length;
     const tokens = data.sentences.reduce((s, r) => s + r.words.length, 0);
-    const skipped = data.skipped ? ` · ${data.skipped} skipped` : "";
-    status.textContent = `${n} sentence${n > 1 ? "s" : ""} · ${tokens} tokens${skipped} · ${ms} ms`;
+    const skipped = data.skipped ? ` \u00b7 ${data.skipped} skipped` : "";
+    status.textContent = `${n} sentence${n > 1 ? "s" : ""} \u00b7 ${tokens} tokens${skipped} \u00b7 ${ms} ms`;
     results.innerHTML = renderFeatures(data.features)
       + `<h2>Sentences</h2>`
       + (data.skipped ? `<p class="note">${data.skipped} sentence${data.skipped > 1 ? "s were" : " was"} skipped (fewer than 2 or more than 100 words) and not counted.</p>` : "")
@@ -108,7 +117,7 @@ async function run() {
   } catch (e) {
     results.innerHTML = `<p class="error">${esc(String(e))}</p>`;
     status.textContent = "error";
-    renderProfile(profile, null);
+    showProfile(null);
   } finally {
     profile.style.opacity = "";
     setBusy(false);
@@ -142,8 +151,17 @@ for (let n = 1; n <= MAX_POOL_SIZE; n++) {
 workers.value = String(poolSize());
 workers.addEventListener("change", () => waitForModel(setPoolSize(Number(workers.value))));
 
-renderProfile(profile, null);
+showProfile(null);
 waitForModel(ready());
+
+// The theme is set before first paint by the script in index.html.
+themeToggle.addEventListener("click", () => {
+  const root = document.documentElement;
+  const next = root.dataset.theme === "dark" ? "light" : "dark";
+  root.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch { }
+  showProfile(shownProfile);
+});
 
 btn.addEventListener("click", run);
 input.addEventListener("keydown", (e) => {
